@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoSec UTM Generator</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #65738a;
+      --line: #dce3ee;
+      --primary: #2251ff;
+      --primary-dark: #183fca;
+      --success: #0d8f61;
+      --danger: #c0362c;
+      --shadow: 0 16px 40px rgba(16, 30, 54, 0.10);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, #e9efff 0, transparent 32%), var(--bg);
+      color: var(--text);
+    }
+    .app { max-width: 1220px; margin: 0 auto; padding: 32px 20px 48px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 22px; }
+    .eyebrow { color: var(--primary); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 12px; margin-bottom: 8px; }
+    h1 { margin: 0; font-size: 34px; line-height: 1.15; }
+    .subtitle { margin: 10px 0 0; color: var(--muted); max-width: 780px; line-height: 1.55; }
+    .layout { display: grid; grid-template-columns: minmax(360px, 0.95fr) minmax(420px, 1.25fr); gap: 20px; align-items: start; }
+    .card { background: rgba(255,255,255,0.92); border: 1px solid rgba(220, 227, 238, 0.9); box-shadow: var(--shadow); border-radius: var(--radius); padding: 22px; }
+    .card h2 { margin: 0 0 16px; font-size: 20px; }
+    label { display: block; font-weight: 700; margin-bottom: 8px; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; line-height: 1.4; }
+    input, select {
+      width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; font-size: 14px;
+      color: var(--text); background: #fff; outline: none; transition: border 0.15s, box-shadow 0.15s; direction: ltr; text-align: left;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(34, 81, 255, 0.11); }
+    .field { margin-bottom: 16px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .source-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .meta-box { border: 1px dashed #cbd5e4; border-radius: 12px; padding: 10px 12px; background: #f8fbff; font-size: 13px; }
+    .meta-box span { color: var(--muted); display: block; margin-bottom: 4px; }
+    button { border: 0; border-radius: 12px; padding: 11px 14px; font-weight: 700; cursor: pointer; transition: transform 0.12s, background 0.12s, opacity 0.12s; }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #edf1f7; color: #23334d; }
+    .btn-ghost { background: transparent; color: var(--danger); border: 1px solid #f0c6c2; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .preview-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat { background: #f8fbff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+    .stat span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .stat strong { direction: ltr; display: block; text-align: left; font-size: 13px; overflow-wrap: anywhere; }
+    .url-output { direction: ltr; text-align: left; background: #0e1729; color: #d8e2ff; border-radius: 14px; padding: 14px; min-height: 72px; overflow-wrap: anywhere; font-family: Consolas, Monaco, monospace; line-height: 1.55; border: 1px solid #202b45; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; direction: ltr; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; font-size: 13px; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; background: #f8fbff; }
+    td.url-cell { overflow-wrap: anywhere; font-family: Consolas, Monaco, monospace; line-height: 1.45; }
+    .small-btn { padding: 8px 10px; font-size: 12px; border-radius: 10px; display: block; margin-bottom: 6px; }
+    .empty { border: 1px dashed #cbd5e4; border-radius: 14px; padding: 22px; color: var(--muted); text-align: center; background: #fbfdff; }
+    .error { color: var(--danger); font-size: 13px; margin-top: 8px; min-height: 18px; }
+    .success { color: var(--success); font-size: 13px; margin-top: 8px; min-height: 18px; }
+    @media (max-width: 920px) { header { display: block; } .layout { grid-template-columns: 1fr; } .preview-bar { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .two-col, .source-meta, .preview-bar { grid-template-columns: 1fr; } h1 { font-size: 28px; } .card { padding: 18px; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="eyebrow">AlgoSec Marketing</div>
+        <h1>UTM Generator</h1>
+        <p class="subtitle">Enter a landing page URL, select a source, add the campaign name and one adcopy value. The tool generates a clean, lowercase tracked URL with preview, copy, and persistent history.</p>
+      </div>
+    </header>
+
+    <section class="layout">
+      <div class="card">
+        <h2>Campaign Details</h2>
+        <div class="field">
+          <label for="baseUrl">URL</label>
+          <input id="baseUrl" type="url" placeholder="https://www.algosec.com/..." autocomplete="off" />
+          <div class="hint">Existing non-UTM query parameters are preserved; existing UTM parameters are overwritten to prevent duplicates.</div>
+        </div>
+
+        <div class="two-col">
+          <div class="field">
+            <label for="source">Source</label>
+            <select id="source"></select>
+          </div>
+          <div class="field">
+            <label for="campaign">Campaign Name</label>
+            <input id="campaign" type="text" placeholder="Zero Trust" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="source-meta">
+          <div class="meta-box"><span>utm_source</span><strong id="utmSource">-</strong></div>
+          <div class="meta-box"><span>utm_medium</span><strong id="utmMedium">-</strong></div>
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+          <label for="adcopy">Adcopy</label>
+          <input id="adcopy" type="text" placeholder="adcopy-a" autocomplete="off" />
+          <div class="hint">This value will be added as utm_content. Values are normalized to lowercase with hyphens.</div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="generate" type="button">Generate URL</button>
+          <button class="btn-secondary" id="copyAll" type="button">Copy URL</button>
+          <button class="btn-ghost" id="reset" type="button">Reset</button>
+        </div>
+        <div id="message" class="error"></div>
+      </div>
+
+      <div class="card">
+        <h2>Preview</h2>
+        <div class="preview-bar">
+          <div class="stat"><span>Source</span><strong id="previewSource">-</strong></div>
+          <div class="stat"><span>Medium</span><strong id="previewMedium">-</strong></div>
+          <div class="stat"><span>Campaign</span><strong id="previewCampaign">-</strong></div>
+          <div class="stat"><span>Adcopy</span><strong id="previewAdcopy">-</strong></div>
+        </div>
+        <div id="firstUrl" class="url-output">The generated URL will appear here after completing the required fields.</div>
+        <div id="success" class="success" role="status" aria-live="polite"></div>
+        <h2 style="margin-top:22px;">History</h2>
+        <div id="tableWrap" class="empty">No history yet.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const sourceConfig = {
+      linkedin: { label: 'LinkedIn', utm_source: 'linkedin', utm_medium: 'paid', lead_source: 'Paid Social' },
+      google: { label: 'Google', utm_source: 'google', utm_medium: 'ppc', lead_source: 'Paid Search' },
+      '6sense': { label: '6sense', utm_source: '6sense', utm_medium: 'paid', lead_source: 'Paid' },
+      bing: { label: 'Bing', utm_source: 'bing', utm_medium: 'ppc', lead_source: 'Paid Search' },
+      darkreading: { label: 'Dark Reading', utm_source: 'darkreading', utm_medium: 'paid', lead_source: 'Paid' }
+    };
+
+    const els = {
+      baseUrl: document.getElementById('baseUrl'),
+      source: document.getElementById('source'),
+      campaign: document.getElementById('campaign'),
+      adcopy: document.getElementById('adcopy'),
+      generate: document.getElementById('generate'),
+      copyAll: document.getElementById('copyAll'),
+      reset: document.getElementById('reset'),
+      message: document.getElementById('message'),
+      success: document.getElementById('success'),
+      firstUrl: document.getElementById('firstUrl'),
+      tableWrap: document.getElementById('tableWrap'),
+      utmSource: document.getElementById('utmSource'),
+      utmMedium: document.getElementById('utmMedium'),
+      previewSource: document.getElementById('previewSource'),
+      previewMedium: document.getElementById('previewMedium'),
+      previewCampaign: document.getElementById('previewCampaign'),
+      previewAdcopy: document.getElementById('previewAdcopy')
+    };
+
+    let generatedRow = null;
+    let historyRows = [];
+    const HISTORY_KEY = 'algosec_utm_generator_history_v1';
+
+    function initSources() {
+      els.source.innerHTML = Object.keys(sourceConfig).map(key => `<option value="${key}">${sourceConfig[key].label}</option>`).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+    }
+
+    function normalizeValue(str) {
+      return String(str || '')
+        .trim()
+        .toLowerCase()
+        .replace(/&/g, ' and ')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/-{2,}/g, '-');
+    }
+
+    function containsEmailLikeValue(str) {
+      return /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(String(str || ''));
+    }
+
+    function ensureUrl(input) {
+      const raw = String(input || '').trim();
+      if (!raw) throw new Error('Please enter a URL.');
+      try { return new URL(raw); }
+      catch (e) {
+        try { return new URL('https://' + raw); }
+        catch (e2) { throw new Error('Please enter a valid URL.'); }
+      }
+    }
+
+    function buildRow() {
+      const url = ensureUrl(els.baseUrl.value);
+      const cfg = sourceConfig[els.source.value];
+
+      if (containsEmailLikeValue(els.campaign.value) || containsEmailLikeValue(els.adcopy.value)) {
+        throw new Error('Do not include email addresses or personal data in UTM values.');
+      }
+
+      const campaign = normalizeValue(els.campaign.value);
+      if (!campaign) throw new Error('Please enter a Campaign Name.');
+
+      const adcopy = normalizeValue(els.adcopy.value);
+      if (!adcopy) throw new Error('Please enter an Adcopy value.');
+
+      const nextUrl = new URL(url.toString());
+      nextUrl.searchParams.set('utm_source', cfg.utm_source);
+      nextUrl.searchParams.set('utm_medium', cfg.utm_medium);
+      nextUrl.searchParams.set('utm_campaign', campaign);
+      nextUrl.searchParams.set('utm_content', adcopy);
+
+      return {
+        id: String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8),
+        created_at: new Date().toISOString(),
+        utm_source: cfg.utm_source,
+        utm_medium: cfg.utm_medium,
+        utm_campaign: campaign,
+        utm_content: adcopy,
+        url: nextUrl.toString()
+      };
+    }
+
+    function loadHistory() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        historyRows = Array.isArray(saved) ? saved : [];
+      } catch (e) { historyRows = []; }
+      renderHistory();
+    }
+
+    function saveHistory() {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(historyRows));
+    }
+
+    function addToHistory(row) {
+      const existingIndex = historyRows.findIndex(item => item.url === row.url);
+      if (existingIndex !== -1) historyRows.splice(existingIndex, 1);
+      historyRows.unshift(row);
+      saveHistory();
+      renderHistory();
+    }
+
+    function deleteHistoryEntry(id) {
+      historyRows = historyRows.filter(row => row.id !== id);
+      saveHistory();
+      renderHistory();
+      els.success.textContent = 'Entry deleted.';
+      els.message.textContent = '';
+    }
+
+    function renderLatest(row) {
+      generatedRow = row;
+      els.firstUrl.textContent = row ? row.url : 'The generated URL will appear here after completing the required fields.';
+    }
+
+    function renderHistory() {
+      if (!historyRows.length) {
+        els.tableWrap.className = 'empty';
+        els.tableWrap.textContent = 'No history yet.';
+        return;
+      }
+
+      els.tableWrap.className = '';
+      els.tableWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Source</th>
+              <th>Campaign</th>
+              <th>Adcopy</th>
+              <th>Generated URL</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${historyRows.map(row => `
+              <tr data-id="${escapeHtml(row.id)}">
+                <td>${escapeHtml(formatDate(row.created_at))}</td>
+                <td>${escapeHtml(row.utm_source)}</td>
+                <td>${escapeHtml(row.utm_campaign)}</td>
+                <td>${escapeHtml(row.utm_content)}</td>
+                <td class="url-cell">${escapeHtml(row.url)}</td>
+                <td>
+                  <button class="btn-secondary small-btn copy-history" type="button" data-id="${escapeHtml(row.id)}">Copy</button>
+                  <button class="btn-ghost small-btn delete-history" type="button" data-id="${escapeHtml(row.id)}">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+
+      els.tableWrap.querySelectorAll('.copy-history').forEach(button => {
+        button.addEventListener('click', () => {
+          const row = historyRows.find(item => item.id === button.dataset.id);
+          if (row) copyText(row.url, 'Copied to clipboard');
+        });
+      });
+
+      els.tableWrap.querySelectorAll('.delete-history').forEach(button => {
+        button.addEventListener('click', () => deleteHistoryEntry(button.dataset.id));
+      });
+    }
+
+    function formatDate(isoDate) {
+      if (!isoDate) return '-';
+      try {
+        return new Date(isoDate).toLocaleString('en-US', {
+          year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+      } catch (e) { return '-'; }
+    }
+
+    function refreshPreviewMeta() {
+      const cfg = sourceConfig[els.source.value];
+      els.utmSource.textContent = cfg.utm_source;
+      els.utmMedium.textContent = cfg.utm_medium;
+      els.previewSource.textContent = cfg.utm_source;
+      els.previewMedium.textContent = cfg.utm_medium;
+      els.previewCampaign.textContent = normalizeValue(els.campaign.value) || '-';
+      els.previewAdcopy.textContent = normalizeValue(els.adcopy.value) || '-';
+      els.success.textContent = '';
+      els.message.textContent = '';
+    }
+
+    function generate() {
+      els.message.textContent = '';
+      els.success.textContent = '';
+      try {
+        const row = buildRow();
+        renderLatest(row);
+        addToHistory(row);
+        els.success.textContent = 'URL generated successfully.';
+      } catch (err) {
+        renderLatest(null);
+        els.message.textContent = err.message;
+      }
+    }
+
+    function copyText(text, msg) {
+      const copiedMessage = msg || 'Copied to clipboard';
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          els.success.textContent = copiedMessage;
+          els.message.textContent = '';
+        }).catch(() => fallbackCopyText(text, copiedMessage));
+      } else {
+        fallbackCopyText(text, copiedMessage);
+      }
+    }
+
+    function fallbackCopyText(text, msg) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      try {
+        const ok = document.execCommand('copy');
+        if (!ok) throw new Error('copy failed');
+        els.success.textContent = msg;
+        els.message.textContent = '';
+      } catch (e) {
+        els.message.textContent = 'Automatic copy failed. You can copy the URL manually from the preview.';
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+
+    function copyAll() {
+      if (!generatedRow) generate();
+      if (!generatedRow) return;
+      copyText(generatedRow.url, 'Copied to clipboard');
+    }
+
+    function resetForm() {
+      els.baseUrl.value = '';
+      els.campaign.value = '';
+      els.adcopy.value = '';
+      els.source.value = 'linkedin';
+      renderLatest(null);
+      refreshPreviewMeta();
+    }
+
+    initSources();
+    loadHistory();
+    refreshPreviewMeta();
+    els.source.addEventListener('change', refreshPreviewMeta);
+    els.campaign.addEventListener('input', refreshPreviewMeta);
+    els.baseUrl.addEventListener('input', refreshPreviewMeta);
+    els.adcopy.addEventListener('input', refreshPreviewMeta);
+    els.generate.addEventListener('click', generate);
+    els.copyAll.addEventListener('click', copyAll);
+    els.reset.addEventListener('click', resetForm);
+  </script>
+</body>
+</html>
