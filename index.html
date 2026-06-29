@@ -75,7 +75,7 @@
       <div>
         <div class="eyebrow">AlgoSec Marketing</div>
         <h1>UTM Generator</h1>
-        <p class="subtitle">Enter a landing page URL, select a source, add the campaign name and one adcopy value. The tool generates a clean, lowercase tracked URL with preview, copy, and persistent history.</p>
+        <p class="subtitle">Enter a landing page URL, select a source, and add a campaign name. Adcopy is optional. The tool generates a clean, lowercase tracked URL with preview, copy, and persistent history.</p>
       </div>
     </header>
 
@@ -105,9 +105,9 @@
         </div>
 
         <div class="field" style="margin-top:18px;">
-          <label for="adcopy">Adcopy</label>
+          <label for="adcopy">Adcopy <span style="color: var(--muted); font-weight: 400;">(optional)</span></label>
           <input id="adcopy" type="text" placeholder="adcopy-a" autocomplete="off" />
-          <div class="hint">This value will be added as utm_content. Values are normalized to lowercase with hyphens.</div>
+          <div class="hint">Optional. When provided, this value is added as utm_content. Values are normalized to lowercase with hyphens.</div>
         </div>
 
         <div class="actions">
@@ -136,7 +136,8 @@
 
   <script>
     const sourceConfig = {
-      linkedin: { label: 'LinkedIn', utm_source: 'linkedin', utm_medium: 'paid', lead_source: 'Paid Social' },
+      linkedin_paid: { label: 'LinkedIn Paid', utm_source: 'linkedin', utm_medium: 'paid', lead_source: 'Paid Social' },
+      linkedin_organic: { label: 'LinkedIn Organic', utm_source: 'linkedin', utm_medium: 'organic_social', lead_source: 'Organic Social' },
       google: { label: 'Google', utm_source: 'google', utm_medium: 'ppc', lead_source: 'Paid Search' },
       '6sense': { label: '6sense', utm_source: '6sense', utm_medium: 'paid', lead_source: 'Paid' },
       bing: { label: 'Bing', utm_source: 'bing', utm_medium: 'ppc', lead_source: 'Paid Search' },
@@ -211,13 +212,16 @@
       if (!campaign) throw new Error('Please enter a Campaign Name.');
 
       const adcopy = normalizeValue(els.adcopy.value);
-      if (!adcopy) throw new Error('Please enter an Adcopy value.');
 
       const nextUrl = new URL(url.toString());
       nextUrl.searchParams.set('utm_source', cfg.utm_source);
       nextUrl.searchParams.set('utm_medium', cfg.utm_medium);
       nextUrl.searchParams.set('utm_campaign', campaign);
-      nextUrl.searchParams.set('utm_content', adcopy);
+      if (adcopy) {
+        nextUrl.searchParams.set('utm_content', adcopy);
+      } else {
+        nextUrl.searchParams.delete('utm_content');
+      }
 
       return {
         id: String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8),
@@ -289,7 +293,7 @@
                 <td>${escapeHtml(formatDate(row.created_at))}</td>
                 <td>${escapeHtml(row.utm_source)}</td>
                 <td>${escapeHtml(row.utm_campaign)}</td>
-                <td>${escapeHtml(row.utm_content)}</td>
+                <td>${escapeHtml(row.utm_content || '-')}</td>
                 <td class="url-cell">${escapeHtml(row.url)}</td>
                 <td>
                   <button class="btn-secondary small-btn copy-history" type="button" data-id="${escapeHtml(row.id)}">Copy</button>
@@ -391,7 +395,7 @@
       els.baseUrl.value = '';
       els.campaign.value = '';
       els.adcopy.value = '';
-      els.source.value = 'linkedin';
+      els.source.value = 'linkedin_paid';
       renderLatest(null);
       refreshPreviewMeta();
     }
